@@ -24,6 +24,8 @@
 
 #include <trio/trio.h>
 #include <map>
+#include <iostream>
+#include <string>
 #include "debugger.h"
 #include "gfxdebugger.h"
 #include "memdebugger.h"
@@ -34,6 +36,8 @@
 static MemDebugger* memdbg = NULL;
 static std::unique_ptr<FileStream> TraceLog;
 static std::string TraceLogSpec;
+static std::string BreakCommandsSpec;
+static std::string PatchCommandsSpec;
 static int64 TraceLogEnd;
 static unsigned TraceLogRTO;
 
@@ -44,7 +48,7 @@ static bool IsActive;
 static unsigned int WhichMode; // 0 = normal, 1 = gfx, 2 = memory
 
 static bool NeedPCBPToggle;
-static int NeedStep;	// 0 =, 1 = , 2 = 
+static int NeedStep;	// 0 =, 1 = , 2 =
 static int NeedRun;
 static bool InSteppingMode;
 
@@ -165,7 +169,8 @@ static void UpdateCoreHooks(void)
  bool CPUCBNeeded = BPInUse || TraceLog || InSteppingMode || (NeedStep == 2);
 
  CurGame->Debugger->EnableBranchTrace(BPInUse || TraceLog || IsActive);
- CurGame->Debugger->SetCPUCallback(CPUCBNeeded ? CPUCallback : NULL, TraceLog || InSteppingMode || (NeedStep == 2));
+ CurGame->Debugger->SetCPUCallback(CPUCallback, TraceLog || InSteppingMode || (NeedStep == 2));
+ //CurGame->Debugger->SetCPUCallback(CPUCBNeeded ? CPUCallback : NULL, TraceLog || InSteppingMode || (NeedStep == 2));
 }
 
 static void UpdatePCBreakpoints(void)
@@ -501,7 +506,9 @@ typedef enum
  AuxWriteBPS,
  OpBPS,
  ForceInt,
- TraceLogPrompt
+ TraceLogPrompt,
+ BreakCommandsPrompt,
+ PatchCommandsPrompt
 } PromptType;
 
 // FIXME, cleanup, less spaghetti:
@@ -596,12 +603,14 @@ class DebuggerPrompt : public HappyPrompt
 		     {
 		      TraceLog.reset(new FileStream(tmpfn, FileStream::MODE_WRITE_INPLACE));
 
+              /*
 		      TraceLog->seek(0, SEEK_END);
 		      if(TraceLog->tell() != 0)
 		       TraceLog->print_format("\n\n\n");
 
 		      TraceLog->print_format("Tracing began: %s\n", Time::StrTime().c_str());
 		      TraceLog->print_format("[ADDRESS]: [INSTRUCTION]   [REGISTERS(before instruction exec)]");
+              */
 
 		      if(num == 1)
 		       TraceLogEnd = -1;
@@ -620,6 +629,63 @@ class DebuggerPrompt : public HappyPrompt
 		    }
 		   }
 		  }
+		  else if(InPrompt == BreakCommandsPrompt)
+		  {
+		   if(pstring != BreakCommandsSpec || !TraceLog)
+		   {
+		    BreakCommandsSpec = pstring;
+		    char tmpfn[256];
+		    int num = trio_sscanf(tmp_c_str, "%255s", tmpfn);
+		    if(num >= 1)
+		    {
+		      FileStream* fs = new FileStream(tmpfn, FileStream::MODE_READ);
+              std::string line;
+              while(fs->get_line(line) >= 0) {
+                if(line.size() >= 1) {
+                  unsigned long long addr = std::stol(line, nullptr, 16);
+                  std::cout << "bp @ " << std::hex << addr << std::endl;
+                  DisAddr = addr;
+                  DisAddr &= ((1ULL << CurGame->Debugger->LogAddrBits) - 1);
+                  DisAddr &= ~(CurGame->Debugger->InstructionAlignment - 1);
+                  DisCOffs = 0xFFFFFFFF;
+                  TogglePCBreakPoint(addr);
+                }
+              }
+            }
+           }
+          }
+		  else if(InPrompt == PatchCommandsPrompt)
+		  {
+		   if(pstring != PatchCommandsSpec || !TraceLog)
+		   {
+		    PatchCommandsSpec = pstring;
+		    char tmpfn[256];
+		    int num = trio_sscanf(tmp_c_str, "%255s", tmpfn);
+		    if(num >= 1)
+		    {
+		      FileStream* fs = new FileStream(tmpfn, FileStream::MODE_READ);
+              std::string line;
+              while(fs->get_line(line) >= 0) {
+                if(line.size() >= 1) {
+
+                  std::string delim = std::string(" ");
+                  size_t found = line.find(delim);
+                  size_t startIndex = 0;
+                  unsigned long long addr = std::stol(std::string(line.begin()+startIndex, line.begin()+found), nullptr, 16);
+
+                  startIndex = found + delim.size();
+                  found = line.find(delim, startIndex);
+                  std::string hexVal = std::string(line.begin()+startIndex, line.end());
+                  unsigned long lenVal = hexVal.size() / 2;
+                  unsigned long val = std::stol(hexVal, nullptr, 16);
+
+                  std::cout << "pa @ " << std::hex << addr << " = " << std::hex << val << std::endl;
+                  MemPoke(addr, val, lenVal, false, true);
+                }
+              }
+            }
+           }
+          }
                   else if(InPrompt == ForceInt)
                   {
                    CurGame->Debugger->IRQ(atoi(tmp_c_str));
@@ -971,8 +1037,9 @@ void Debugger_GT_Draw(void)
 
     if(NeedPCBPToggle)
     {
-     if(DisCOffs == 0xFFFFFFFF)
+     if(DisCOffs == 0xFFFFFFFF) {
       TogglePCBreakPoint(dis_A);
+     }
      NeedPCBPToggle = 0;
     }
    }
@@ -1122,7 +1189,7 @@ void Debugger_GT_Draw(void)
     ewa_bits = CurGame->Debugger->PhysAddrBits;
     ewa = WatchAddrPhys;
    }
-   
+
    ewa_mask = ((uint64)1 << ewa_bits) - 1;
 
    if(InRegs)
@@ -1152,7 +1219,7 @@ void Debugger_GT_Draw(void)
    }
    DrawText(surface, row_x + ascii_lhpadding, row_y, asciistr, ascii_color, fontid);
   }
- }  
+ }
 
  if(InPrompt)
   myprompt->Draw(surface, rect);
@@ -1198,7 +1265,7 @@ static void MDFN_COLD SetActive(bool active, unsigned which_ms)
     // End debug remove me
 
     switch(DisFont)
-    { 
+    {
      case MDFN_FONT_5x7:
      	DisFontHeight = 7;
 	break;
@@ -1421,13 +1488,13 @@ void Debugger_GT_Event(const SDL_Event *event)
    {
     switch(event->key.keysym.sym)
     {
-     case SDLK_1: WhichMode = 0; 
+     case SDLK_1: WhichMode = 0;
  		  GfxDebugger_SetActive(FALSE);
  		  memdbg->SetActive(FALSE);
 		  LogDebugger_SetActive(FALSE);
 		  break;
      case SDLK_2: WhichMode = 1;
-		  GfxDebugger_SetActive(TRUE); 
+		  GfxDebugger_SetActive(TRUE);
 		  memdbg->SetActive(FALSE);
 		  LogDebugger_SetActive(FALSE);
 		  break;
@@ -1502,7 +1569,7 @@ void Debugger_GT_Event(const SDL_Event *event)
 	 if(event->key.keysym.sym == SDLK_ESCAPE)
 	 {
 	  delete myprompt;
-	  myprompt = NULL; 
+	  myprompt = NULL;
 	  InPrompt = None;
 	 }
 	}
@@ -1565,8 +1632,8 @@ void Debugger_GT_Event(const SDL_Event *event)
 	   NeedDisAddrChange = -11;
           break;
 
-	 case SDLK_PAGEDOWN: 
-          if(event->key.keysym.mod & KMOD_SHIFT) 
+	 case SDLK_PAGEDOWN:
+          if(event->key.keysym.mod & KMOD_SHIFT)
 	  {
 	   int change = 0x80; //InRegs ? 0x100 : 0x80;
 
@@ -1575,7 +1642,7 @@ void Debugger_GT_Event(const SDL_Event *event)
 	   else
 	    WatchAddrPhys = (WatchAddrPhys + change) & (((uint64)1 << CurGame->Debugger->PhysAddrBits) - 1);
 	  }
-          else  
+          else
 	   NeedDisAddrChange = 11;
           break;
 
@@ -1748,6 +1815,22 @@ void Debugger_GT_Event(const SDL_Event *event)
 		 NeedRun = true;
 		break;
 
+	 case SDLK_d:
+		if(!InPrompt)
+		{
+                if(event->key.keysym.mod & KMOD_SHIFT) {
+		 InPrompt = BreakCommandsPrompt;
+		 myprompt = new DebuggerPrompt("BreakCommands(filename)", BreakCommandsSpec);
+		 PromptTAKC = event->key.keysym.sym;
+                }
+                else {
+		 InPrompt = PatchCommandsPrompt;
+		 myprompt = new DebuggerPrompt("PatchCommands(filename)", PatchCommandsSpec);
+		 PromptTAKC = event->key.keysym.sym;
+                }
+		}
+		break;
+
 	 case SDLK_l:
 		if(!InPrompt)
 		{
@@ -1845,6 +1928,9 @@ void Debugger_Init(void)
 	TraceLogEnd = 0;
 	TraceLogRTO = 0;
 
+	BreakCommandsSpec = "";
+	PatchCommandsSpec = "";
+
 	NeedInit = true;
 	WatchLogical = true;
 	IsActive = false;
@@ -1881,6 +1967,8 @@ void Debugger_Init(void)
 	 Debugger_GT_Toggle();
 	 Debugger_GT_ForceSteppingMode();
 	}
+
+    UpdateCoreHooks();
 }
 
 void Debugger_Kill(void)

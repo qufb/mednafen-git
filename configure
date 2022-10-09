@@ -4646,12 +4646,7 @@ ac_script='s/[\\$]/&&/g;s/;s,x,x,$//'
 program_transform_name=`$as_echo "$program_transform_name" | sed "$ac_script"`
 
 if test x"${MISSING+set}" != xset; then
-  case $am_aux_dir in
-  *\ * | *\	*)
-    MISSING="\${SHELL} \"$am_aux_dir/missing\"" ;;
-  *)
-    MISSING="\${SHELL} $am_aux_dir/missing" ;;
-  esac
+  MISSING="\${SHELL} '$am_aux_dir/missing'"
 fi
 # Use eval to expand $SHELL
 if eval "$MISSING --is-lightweight"; then
@@ -17140,8 +17135,8 @@ fi
 if test x$enable_jack = xyes; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for JACK" >&5
-$as_echo_n "checking for JACK... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for jack" >&5
+$as_echo_n "checking for jack... " >&6; }
 
 if test -n "$JACK_CFLAGS"; then
     pkg_cv_JACK_CFLAGS="$JACK_CFLAGS"
@@ -17181,7 +17176,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -17199,7 +17194,7 @@ fi
 
 	have_jack=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	have_jack=no
 else
@@ -17490,8 +17485,8 @@ fi
 if test x$with_external_trio = xyes; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for TRIO" >&5
-$as_echo_n "checking for TRIO... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libtrio" >&5
+$as_echo_n "checking for libtrio... " >&6; }
 
 if test -n "$TRIO_CFLAGS"; then
     pkg_cv_TRIO_CFLAGS="$TRIO_CFLAGS"
@@ -17531,7 +17526,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -17607,7 +17602,7 @@ fi
 		TRIO_CFLAGS=""
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for trio_printf in -ltrio" >&5
@@ -17727,8 +17722,8 @@ fi
 if test x$with_external_lzo = xyes; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LZO2" >&5
-$as_echo_n "checking for LZO2... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for lzo2 >= 2.0.9" >&5
+$as_echo_n "checking for lzo2 >= 2.0.9... " >&6; }
 
 if test -n "$LZO2_CFLAGS"; then
     pkg_cv_LZO2_CFLAGS="$LZO2_CFLAGS"
@@ -17768,7 +17763,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -17786,7 +17781,7 @@ fi
 
 	as_fn_error $? "*** lzo2 >= 2.0.9 not found!" "$LINENO" 5
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	as_fn_error $? "*** lzo2 >= 2.0.9 not found!" "$LINENO" 5
 else
@@ -17838,8 +17833,8 @@ fi
 if test x$with_external_libzstd = xyes; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBZSTD" >&5
-$as_echo_n "checking for LIBZSTD... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libzstd >= 1.4.8" >&5
+$as_echo_n "checking for libzstd >= 1.4.8... " >&6; }
 
 if test -n "$LIBZSTD_CFLAGS"; then
     pkg_cv_LIBZSTD_CFLAGS="$LIBZSTD_CFLAGS"
@@ -17879,7 +17874,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -17897,7 +17892,7 @@ fi
 
 	as_fn_error $? "*** libzstd >= 1.4.8 not found!" "$LINENO" 5
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	as_fn_error $? "*** libzstd >= 1.4.8 not found!" "$LINENO" 5
 else
@@ -17949,8 +17944,8 @@ fi
 if test x$with_libflac = xyes; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for FLAC" >&5
-$as_echo_n "checking for FLAC... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for flac >= 1.3.0" >&5
+$as_echo_n "checking for flac >= 1.3.0... " >&6; }
 
 if test -n "$FLAC_CFLAGS"; then
     pkg_cv_FLAC_CFLAGS="$FLAC_CFLAGS"
@@ -17990,7 +17985,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -18008,7 +18003,7 @@ fi
 
 	as_fn_error $? "*** libflac >= 1.3.0 not found!" "$LINENO" 5
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	as_fn_error $? "*** libflac >= 1.3.0 not found!" "$LINENO" 5
 else
@@ -18805,8 +18800,8 @@ fi
   if test "x$sdl_prefix$sdl_exec_prefix" = x ; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for SDL" >&5
-$as_echo_n "checking for SDL... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for sdl2 >= $min_sdl_version" >&5
+$as_echo_n "checking for sdl2 >= $min_sdl_version... " >&6; }
 
 if test -n "$SDL_CFLAGS"; then
     pkg_cv_SDL_CFLAGS="$SDL_CFLAGS"
@@ -18846,7 +18841,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -18864,7 +18859,7 @@ fi
 
 	sdl_pc=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	sdl_pc=no
 else
@@ -21957,7 +21952,9 @@ $as_echo X/"$am_mf" |
     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error $? "Something went wrong bootstrapping makefile fragments
-    for automatic dependency tracking.  Try re-running configure with the
+    for automatic dependency tracking.  If GNU make was not used, consider
+    re-running the configure script with MAKE=\"gmake\" (or whatever is
+    necessary).  You can also try re-running configure with the
     '--disable-dependency-tracking' option to at least be able to build
     the package (albeit without support for automatic dependency tracking).
 See \`config.log' for more details" "$LINENO" 5; }

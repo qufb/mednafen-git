@@ -23,6 +23,7 @@
 #include "timer.h"
 #include "cdc.h"
 #include "spu.h"
+#include <unordered_set>
 
 namespace MDFN_IEN_PSX
 {
@@ -142,6 +143,8 @@ void CheckCPUBPCallB(bool write, uint32 address, unsigned int len)
  }
 }
 
+static std::unordered_set<uint32> hitBPs;
+
 static void CPUHandler(const pscpu_timestamp_t timestamp, uint32 PC)
 {
  if(LogFunc)
@@ -170,6 +173,10 @@ static void CPUHandler(const pscpu_timestamp_t timestamp, uint32 PC)
   if(PC >= bpit->A[0] && PC <= bpit->A[1])
   {
    FoundBPoint = true;
+   if (hitBPs.find(PC) == hitBPs.end()) {
+        hitBPs.insert(PC);
+        printf("hit @ %08X\n", PC);
+   }
    break;
   }
  }
