@@ -20,6 +20,9 @@
 */
 
 #ifdef WANT_DEBUGGER
+
+static std::unordered_set<uint32> traceLogInst;
+
 static struct DBGS
 {
  enum { NUMBT = 24 };
@@ -399,12 +402,13 @@ static MDFN_COLD void DBG_CPUHandler(void)
 {
  const uint32 PC = CPU[which].GetRegister(SH7095::GSREG_PC_ID, NULL, 0);
 
+ traceLogInst.insert(PC);
+
  if(which != DBG.ActiveCPU)
  {
   DBG.CurPC[which] = PC;
   return;
  }
-
 #if 0
  if(LogFunc)
  {
@@ -948,6 +952,18 @@ static MDFN_COLD void DBG_Init(void)
 
 static MDFN_COLD void DBG_Kill(void)
 {
+    FileStream fp("out", FileStream::MODE_WRITE_INPLACE);
+    std::unordered_set<uint32> :: iterator it;
+    char traceLogBuf[32 + 1];
+    for (it = traceLogInst.begin(); it != traceLogInst.end(); it++) {
+        memset(traceLogBuf, 0, 32 + 1);
+        std::snprintf(traceLogBuf, 32 + 1, "%08X", *it);
+        fp.write(traceLogBuf, strlen(traceLogBuf));
+        fp.write("\n", 1);
+    }
+    fp.close();
+    printf("[+] Dumped trace log.\n");
+
  DBG.BreakPointsPC.clear();
  DBG.BreakPointsRead.clear();
  DBG.BreakPointsWrite.clear();

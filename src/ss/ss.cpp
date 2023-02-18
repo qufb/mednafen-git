@@ -32,6 +32,7 @@
 #include <mednafen/Time.h>
 
 #include <bitset>
+#include <unordered_set>
 
 #include <trio/trio.h>
 
